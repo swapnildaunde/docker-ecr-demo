@@ -1,12 +1,19 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install -y apache2 && apt-get clean
+# Install dependencies
+RUN apt-get update && \
+ apt-get -y install apache2
 
-ENV APACHE_RUN_USER www-data
-ENV APACHE_RUN_GROUP www-data
-ENV APACHE_LOG_DIR /var/log/apache2
+# Install apache and write hello world message
+RUN echo 'Hello World!' > /var/www/html/index.html
+
+# Configure apache
+RUN echo '. /etc/apache2/envvars' > /root/run_apache.sh && \
+ echo 'mkdir -p /var/run/apache2' >> /root/run_apache.sh && \
+ echo 'mkdir -p /var/lock/apache2' >> /root/run_apache.sh && \ 
+ echo '/usr/sbin/apache2 -D FOREGROUND' >> /root/run_apache.sh && \ 
+ chmod 755 /root/run_apache.sh
 
 EXPOSE 80
 
-COPY index.html /var/www/html
-CMD ["/usr/sbin/apache2", "-D", "FOREGROUND"]
+CMD /root/run_apache.sh
